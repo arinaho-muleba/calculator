@@ -28,7 +28,7 @@ body {
 .display input {
     width: 100%;
     /* border: none; */
-    font-size: 1.5em;
+    font-size: 1.2em;
     padding: 5px;
     box-sizing: border-box;
 
@@ -82,4 +82,9 @@ button {
 .equals:hover{
     background-color: rgba(2, 128, 255, 0.7);
     font-weight: bold
+}
+
+.no-work:hover{
+    background-color: red;
+
 }

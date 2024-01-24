@@ -33,13 +33,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 expression +="Math.E"
                 break;
 
-                
                 case "π":
                 result.value +="π";
                 expression +="Math.PI"
                 break;
 
-                
                 case "sin(":
                 result.value +="sin(";
                 expression +="Math.sin("
@@ -55,66 +53,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 expression +="Math.tan("
                 break;
 
-                          
-                case "arcsin(":
-                result.value +="arcsin(";
-                expression +="Math.asin("
-                break;
-
-                case "arccos(":
-                result.value +="arccos(";
-                expression +="Math.acos("
-                break;
-
-                case "arctan(":
-                result.value +="arctan(";
-                expression +="Math.atan("
-                break;
 
                 case "^":
                     result.value +="^";
                     expression +="**"
-                    break;
-
-                case "²":
-                    result.value +="²";
-                    expression +="**2"
-                    break;
-                
-                case "³":
-                    result.value +="³";
-                    expression +="**3"
-                    break;
-        
-                    case "exp(":
-                        result.value +="exp(";
-                        expression +="Math.exp("
-                        break;
-                
-                case "log10(":
-                    result.value +="log10(";
-                    expression +="Math.log("
-                    break;
-
-                case "√":
-                    result.value +="sqrt(";
-                    expression +="Math.sqrt("
-                    break;
-
-                case "∛":
-                    result.value +="cbrt(";
-                    expression +="cuber("
-                    break;
-
-                case "ln(":
-                    result.value +="ln(";
-                    expression +="Math.log("
-                    break;
-
-                    
-                case "10^":
-                    result.value +="10^";
-                    expression +="10**"
                     break;
 
                 case "!":
@@ -124,14 +66,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
                     
-                    
-
-
-
 
                 case "=":
                     try{
-                 result.value = eval(expression);
+                 result.value = calculateExpression(result.value);
                     }catch(e){
                         result.value = e;
                     }
@@ -155,16 +93,148 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     
 
-    // Function to calculate factorial
-    function factorial(num) {
+});
+
+function calculateExpression(expression) {
+    expression = expression.replace(new RegExp('e', 'g'), Math.E)
+    .replace(new RegExp('π', 'g'), Math.PI);
+    
+    const tokens = tokenize(expression);
+    const syntaxTree = parseExpression(tokens);
+    const result = evaluateSyntaxTree(syntaxTree);
+    return result;
+  }
+  
+  function tokenize(expression) {
+    return expression.match(/\d+\.?\d*|\+|\-|\*|\^|\/|\(|\)|sin|cos|tan|fact/g);
+  }
+  
+  function parseExpression(tokens) {
+    const outputQueue = [];
+    const operatorStack = [];
+  
+    for (const token of tokens) {
+      if (isNumeric(token)) {
+        outputQueue.push(parseFloat(token));
+      } else if (isOperator(token)) {
+        while (
+          operatorStack.length > 0 &&
+          getOperatorPrecedence(operatorStack[operatorStack.length - 1]) >= getOperatorPrecedence(token)
+        ) {
+          outputQueue.push(operatorStack.pop());
+        }
+        operatorStack.push(token);
+      } else if (isTrigFunction(token)) {
+        operatorStack.push(token);
+      } else if (token === '(') {
+        operatorStack.push(token);
+      } else if (token === ')') {
+        while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== '(') {
+          outputQueue.push(operatorStack.pop());
+        }
+        operatorStack.pop(); // Pop '('
+      }
+    }
+  
+    while (operatorStack.length > 0) {
+      outputQueue.push(operatorStack.pop());
+    }
+  
+    return outputQueue;
+  }
+  
+  function evaluateSyntaxTree(syntaxTree) {
+    const valueStack = [];
+  
+    for (const token of syntaxTree) {
+      if (isNumeric(token)) {
+        valueStack.push(token);
+      } else if (isOperator(token)) {
+        const b = valueStack.pop();
+        const a = valueStack.pop();
+        valueStack.push(applyOperator(a, b, token));
+      } else if (isTrigFunction(token)) {
+        const operand = valueStack.pop();
+        valueStack.push(applyTrigFunction(operand, token));
+      }
+    }
+  
+    return valueStack.pop();
+  }
+  
+  function isNumeric(token) {
+    return !isNaN(parseFloat(token)) && isFinite(token);
+  }
+  
+  function isOperator(token) {
+    return token === '+' || token === '-' || token === '*' || token === '/' || token=='^';
+  }
+  
+  function isTrigFunction(token) {
+    return token === 'sin' || token === 'cos' || token === 'tan' || 'fact';
+  }
+  
+  function getOperatorPrecedence(operator) {
+    switch (operator) {
+      case '+':
+      case '-':
+        return 1;
+      case '*':
+      case '/':
+      case '^':
+        return 2;
+      case 'sin':
+      case 'cos':
+      case 'tan':
+      case 'fact':
+        return 3;
+
+      case '^':
+      case 'fact':
+        return 4;
+      default:
+        return 0;
+    }
+  }
+  
+  function applyOperator(a, b, operator) {
+    switch (operator) {
+      case '+':
+        return a + b;
+      case '-':
+        return a - b;
+      case '*':
+        return a * b;
+      case '/':
+        return a / b;
+      case '^':
+        return a**b;
+      default:
+        return 0;
+    }
+  }
+  
+  function applyTrigFunction(operand, functionName) {
+    switch (functionName) {
+      case 'sin':
+        return Math.sin(operand);
+      case 'cos':
+        return Math.cos(operand);
+      case 'tan':
+        return Math.tan(operand);
+      case 'fact':
+        return factorial(operand);
+      default:
+        return 0;
+    }
+  }
+
+  //self defined math methods
+      // Function to calculate factorial
+      function factorial(num) {
         if (num === 0 || num === 1) {
             return 1;
         } else {
             return num * factorial(num - 1);
         }
     }
-
-    function convertToJS(expression){
-            return expression.replaceAll("sin(","Math.sin(")
-    }
-});
