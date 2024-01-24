@@ -64,9 +64,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     expression +="factorial("
                     break;
 
-
-                    
-
                 case "=":
                     try{
                  result.value = calculateExpression(result.value);
@@ -83,16 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         
         }
-
-        function cuber(num){
-            return num **(1/3);
-        }
-
-        function tenToThePower(exponent){
-            return 10**exponent;
-        }
     
-
 });
 
 function calculateExpression(expression) {
